@@ -164,11 +164,14 @@ services:
       - POSTGRES_USER=temporal
       - POSTGRES_PWD=temporal
       - POSTGRES_SEEDS=temporal-postgresql
-      - DYNAMIC_CONFIG_FILE_PATH=config/dynamicconfig/development-sql.yaml
+      - DYNAMIC_CONFIG_FILE_PATH=/etc/temporal/config/dynamicconfig/development-sql.yaml
       - ENABLE_ES=true
       - ES_SEEDS=temporal-elasticsearch
       - ES_VERSION=v7
       - TEMPORAL_NAMESPACE=default
+    configs:
+      - source: temporal-dynamicconfig
+        target: /etc/temporal/config/dynamicconfig/development-sql.yaml
     networks:
       - temporal-network
     healthcheck:
@@ -177,10 +180,6 @@ services:
       timeout: 5s
       retries: 10
       start_period: 30s
-    volumes:
-      - ./dynamicconfig:/etc/temporal/config/dynamicconfig
-    labels:
-      kompose.volume.type: configMap
 
   temporal-admin-tools:
     image: temporalio/admin-tools:1.28.1-tctl-1.18.4-cli-1.4.1
@@ -233,3 +232,13 @@ networks:
     external: false
   temporal-network:
     driver: bridge
+
+configs:
+  temporal-dynamicconfig:
+    content: |
+      limit.maxIDLength:
+        - value: 255
+          constraints: {}
+      system.forceSearchAttributesCacheRefreshOnRead:
+        - value: true
+          constraints: {}
